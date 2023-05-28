@@ -6,15 +6,16 @@
 #include <QLineEdit>
 #include <QRegularExpressionValidator>
 #include <QRegularExpression>
+#include <random>
 
-game::game(QWidget *parent) :
+game::game(const QString& playerOneName, const QString& playerTwoName, bool empty, QWidget *parent) :
     QWidget(parent),
+    playerOneName(playerOneName),
+    playerTwoName(playerTwoName),
+    emptyBoard(empty),
     ui(new Ui::game)
 {
     ui->setupUi(this);
-
-    // Create the validator with a regex that matches numbers 1-9
-    QValidator* validator = new QRegularExpressionValidator(QRegularExpression("[1-9]"), this);
 
     // Initialize the timer and elapsedTime objects
     timer = new QTimer(this);
@@ -26,6 +27,114 @@ game::game(QWidget *parent) :
     // Connect the timer's timeout() signal to the updateTime() slot
     connect(timer, SIGNAL(timeout()), this, SLOT(updateTime()));
     elapsedTime->start();
+
+    // Set board settings.
+    ui->playerOneName->setText(playerOneName);
+    ui->playerTwoName->setText(playerTwoName);
+    ui->turnLabel->setText(playerOneName + "'s Turn");
+
+    this->setPlayerOneTurn(true);
+    this->updateNames(playerOneName, playerTwoName);
+    this->renderBoard(empty);
+}
+
+game::~game()
+{
+    delete ui;
+    delete timer;
+    delete elapsedTime;
+}
+
+void game::validateAndUpdate()
+{
+    QLineEdit* senderGrid = qobject_cast<QLineEdit*>(sender());
+
+    // Find the cell in gameBoard that corresponds to the sender QLineEdit
+    for(int i = 0; i < 9; i++)
+    {
+        for(int j = 0; j < 9; j++)
+        {
+            if(gameBoard[i][j].grid == senderGrid)
+            {
+                bool ok;
+                int newValue = senderGrid->text().toInt(&ok);
+
+                if(ok && isValid(i, j, newValue))
+                {
+                    // Update the value in the game state
+                    gameBoard[i][j].value = newValue;
+
+                    // Set the cell to read-only
+                    gameBoard[i][j].grid->setReadOnly(true);
+
+                    // Increase the score of the current player
+                    if(playerOneTurn)
+                    {
+                        playerOneScore++;
+                        ui->scoreLE->setText(QString::number(playerOneScore) + " - " + QString::number(playerTwoScore));
+                    }
+                    else
+                    {
+                        playerTwoScore++;
+                        ui->scoreLE->setText(QString::number(playerOneScore) + " - " + QString::number(playerTwoScore));
+                    }
+                }
+                else
+                {
+                    // Clear the cell
+                    gameBoard[i][j].grid->clear();
+                }
+
+                // Switch the turn
+                playerOneTurn = !playerOneTurn;
+                ui->turnLabel->setText((playerOneTurn ? playerOneName : playerTwoName) + "'s Turn");
+                return;
+            }
+        }
+    }
+}
+
+bool game::generateBoard(int position)
+{
+    // This count will keep track of the number of cells filled.
+    int count = 0;
+
+    if (position >= 81) return true;
+
+    int row = position / 9;
+    int col = position % 9;
+
+    std::vector<int> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::shuffle(numbers.begin(), numbers.end(), std::default_random_engine(std::random_device()()));
+
+    for (int num : numbers) {
+        if (isValid(row, col, num)) {
+            gameBoard[row][col].value = num;
+
+            // Increment the count for each filled cell.
+            count++;
+
+            // If 40 cells are filled, return true.
+            if (count >= 40) {
+                return true;
+            }
+
+            if (generateBoard(position + 1)) {
+                return true;
+            }
+
+            // Backtrack
+            gameBoard[row][col].value = 0;
+        }
+    }
+
+    return false;
+}
+
+void game::renderBoard(bool emptyBoard)
+{
+    // Create the validator with a regex that matches numbers 1-9
+    QValidator* validator = new QRegularExpressionValidator(QRegularExpression("[1-9]"), this);
 
     gameBoard.resize(9);
     for(int i = 0; i < 9; i++)
@@ -86,44 +195,25 @@ game::game(QWidget *parent) :
     }
 
     ui->boardTiles->setVerticalSpacing(0);
-}
 
-game::~game()
-{
-    delete ui;
-    delete timer;
-    delete elapsedTime;
-}
+    if (!emptyBoard) {
+        // Create a list of all positions
+        std::vector<std::pair<int, int>> positions;
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                positions.push_back(std::make_pair(i, j));
+            }
+        }
 
-void game::validateAndUpdate()
-{
-    QLineEdit* senderGrid = qobject_cast<QLineEdit*>(sender());
+        // Shuffle the positions
+        std::shuffle(positions.begin(), positions.end(), std::default_random_engine(std::random_device{}()));
 
-    // Find the cell in gameBoard that corresponds to the sender QLineEdit
-    for(int i = 0; i < 9; i++)
-    {
-        for(int j = 0; j < 9; j++)
-        {
-            if(gameBoard[i][j].grid == senderGrid)
-            {
-                bool ok;
-                int newValue = senderGrid->text().toInt(&ok);
-
-                if(ok && isValid(i, j, newValue))
-                {
-                    // Update the value in the game state
-                    gameBoard[i][j].value = newValue;
-
-                    // Set the cell to read-only
-                    gameBoard[i][j].grid->setReadOnly(true);
-                }
-                else
-                {
-                    // Clear the cell
-                    gameBoard[i][j].grid->clear();
-                }
-
-                return;
+        // Only fill 40 cells
+        for (int i = 0; i < 40; i++) {
+            int x = positions[i].first;
+            int y = positions[i].second;
+            if(generateBoard(0)) {
+                gameBoard[x][y].grid->setText(QString::number(gameBoard[x][y].value));
             }
         }
     }

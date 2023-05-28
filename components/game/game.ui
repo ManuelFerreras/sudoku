@@ -203,7 +203,7 @@ border: none;</string>
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="scoreTitle_2">
+    <widget class="QLabel" name="scoreLE">
      <property name="geometry">
       <rect>
        <x>-50</x>

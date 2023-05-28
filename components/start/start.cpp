@@ -1,6 +1,6 @@
 #include "start.h"
 #include "./ui_start.h"
-#include "../game/game.h"
+#include "../gameSetup/gameSetup.h"
 
 Start::Start(QWidget *parent)
     : QMainWindow(parent)
@@ -34,7 +34,7 @@ void Start::on_resetButton_clicked()
 
 void Start::on_newGameButton_clicked()
 {
-    game *c = new game();
+    gameSetup *c = new gameSetup();
     c->show();
 
     this->setVisible(false);

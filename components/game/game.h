@@ -15,12 +15,25 @@ class game : public QWidget
     Q_OBJECT
 
 public:
-    explicit game(QWidget *parent = nullptr);
+    explicit game(const QString& playerOneName = QString(), const QString& playerTwoName = QString(), bool empty = false, QWidget *parent = nullptr);
     ~game();
+
+    void updateNames(QString playerOneName, QString playerTwoName) { this->playerOneName = playerOneName; this->playerTwoName = playerTwoName; }
+    QString getPlayerOneName() { return this->playerOneName; }
+    QString getPlayerTwoName() { return this->playerTwoName; }
+
+    void setEmptyBoard(bool empty) { this->emptyBoard = empty; }
+    bool getEmptyBoard() { return this->emptyBoard; }
+
+    void setPlayerOneTurn(bool playerOneTurn) { this->playerOneTurn = playerOneTurn; }
+    bool getPlayerOneTurn() { return this->playerOneTurn; }
 
 public slots:
     void validateAndUpdate();
     void updateTime();
+    void renderBoard(bool emptyBoard);
+    void updateStats();
+    bool generateBoard(int index);
 
 private slots:
     void on_closeButton_clicked();
@@ -41,6 +54,15 @@ private:
 
     QTimer *timer;
     QElapsedTimer *elapsedTime;
+
+    QString playerOneName;
+    QString playerTwoName;
+
+    bool emptyBoard;
+    bool playerOneTurn;
+
+    int playerOneScore = 0;
+    int playerTwoScore = 0;
 };
 
 #endif // GAME_H

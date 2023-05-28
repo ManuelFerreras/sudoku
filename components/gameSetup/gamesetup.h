@@ -15,6 +15,11 @@ public:
     explicit gameSetup(QWidget *parent = nullptr);
     ~gameSetup();
 
+private slots:
+    void on_backButton_clicked();
+
+    void on_continueButton_clicked();
+
 private:
     Ui::gameSetup *ui;
 };
