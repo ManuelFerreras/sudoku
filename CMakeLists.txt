@@ -14,6 +14,10 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
+        lib/txtActions.h
+        lib/txtActions.cpp
+
+        classes/Score/score.h
 
         components/start/start.cpp
         components/start/start.h
@@ -23,13 +27,17 @@ set(PROJECT_SOURCES
         components/game/game.cpp
         components/game/game.ui
 
-        components/gameSetup/gamesetup.h
-        components/gameSetup/gamesetup.cpp
-        components/gameSetup/gamesetup.ui
+        components/gameSetup/gameSetup.h
+        components/gameSetup/gameSetup.cpp
+        components/gameSetup/gameSetup.ui
 
         components/records/records.h
         components/records/records.cpp
         components/records/records.ui
+
+        components/gameResult/gameresult.h
+        components/gameResult/gameresult.cpp
+        components/gameResult/gameresult.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -15,6 +15,11 @@ public:
     explicit records(QWidget *parent = nullptr);
     ~records();
 
+private slots:
+    void on_homeButton_clicked();
+
+    void on_exitButton_clicked();
+
 private:
     Ui::records *ui;
 };

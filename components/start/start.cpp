@@ -1,6 +1,8 @@
 #include "start.h"
 #include "./ui_start.h"
 #include "../gameSetup/gameSetup.h"
+#include "../records/records.h"
+#include "../../lib/txtActions.h"
 
 Start::Start(QWidget *parent)
     : QMainWindow(parent)
@@ -28,7 +30,7 @@ void Start::on_exitButton_clicked()
 
 void Start::on_resetButton_clicked()
 {
-
+    resetScores("../../../../data/scores.txt");
 }
 
 
@@ -43,6 +45,9 @@ void Start::on_newGameButton_clicked()
 
 void Start::on_gamesRecordButton_clicked()
 {
+    records *c = new records();
+    c->show();
 
+    this->setVisible(false);
 }
 

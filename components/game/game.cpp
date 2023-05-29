@@ -1,6 +1,9 @@
 #include "game.h"
 #include "ui_game.h"
 #include "../start/start.h"
+#include "../gameResult/gameresult.h"
+#include "../../lib/txtActions.h"
+#include "../../classes/Score/score.h"
 
 #include <QGridLayout>
 #include <QLineEdit>
@@ -13,7 +16,9 @@ game::game(const QString& playerOneName, const QString& playerTwoName, bool empt
     playerOneName(playerOneName),
     playerTwoName(playerTwoName),
     emptyBoard(empty),
-    ui(new Ui::game)
+    ui(new Ui::game),
+    updateScore(false),
+    error(false)
 {
     ui->setupUi(this);
 
@@ -68,26 +73,63 @@ void game::validateAndUpdate()
                     gameBoard[i][j].grid->setReadOnly(true);
 
                     // Increase the score of the current player
-                    if(playerOneTurn)
+                    if(updateScore)
                     {
-                        playerOneScore++;
-                        ui->scoreLE->setText(QString::number(playerOneScore) + " - " + QString::number(playerTwoScore));
-                    }
-                    else
-                    {
-                        playerTwoScore++;
-                        ui->scoreLE->setText(QString::number(playerOneScore) + " - " + QString::number(playerTwoScore));
+                        if(playerOneTurn)
+                        {
+                            playerOneScore++;
+                            ui->scoreLE->setText(QString::number(playerOneScore) + " - " + QString::number(playerTwoScore));
+                        }
+                        else
+                        {
+                            playerTwoScore++;
+                            ui->scoreLE->setText(QString::number(playerOneScore) + " - " + QString::number(playerTwoScore));
+                        }
                     }
                 }
                 else
                 {
+                    // Check if game has ended.
+                    if (error)
+                    {
+                        // Save score to txt file.
+                        QString winnerName = playerOneScore >= playerTwoScore ? playerOneName : playerTwoName;
+                        Score winnerScore(winnerName.toStdString(), playerOneScore + playerTwoScore);
+
+                        std::vector<Score> scores = getScoresFromFile("../../../../data/scores.txt");
+                        scores.push_back(winnerScore);
+                        writeScoresToFile("../../../../data/scores.txt", scores);
+
+                        // Show an alert with the result.
+                        gameResult *w = new gameResult();
+                        w->setWinnerName(winnerName);
+                        w->setTotalScore(playerOneScore + playerTwoScore);
+                        w->showMessage();
+                        w->show();
+
+                        this->close();
+
+                        // Go back to menu.
+                    }
+                    else
+                    {
+                        error = true;
+                    }
+
+                    // Disconnect the signal to avoid triggering it when clearing the field
+                    disconnect(gameBoard[i][j].grid, &QLineEdit::textChanged, this, &game::validateAndUpdate);
+
                     // Clear the cell
                     gameBoard[i][j].grid->clear();
+
+                    // Reconnect the signal
+                    connect(gameBoard[i][j].grid, &QLineEdit::textChanged, this, &game::validateAndUpdate);
                 }
 
-                // Switch the turn
+                // Switch the turn irrespective of whether the input is valid or not.
                 playerOneTurn = !playerOneTurn;
                 ui->turnLabel->setText((playerOneTurn ? playerOneName : playerTwoName) + "'s Turn");
+
                 return;
             }
         }
@@ -217,6 +259,8 @@ void game::renderBoard(bool emptyBoard)
             }
         }
     }
+
+    updateScore = true;
 }
 
 bool game::isValid(int row, int column, int value)

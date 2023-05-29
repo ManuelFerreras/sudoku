@@ -1,4 +1,4 @@
-#include "gamesetup.h"
+#include "gameSetup.h"
 #include "ui_gamesetup.h"
 #include "../start/start.h"
 #include "../game/game.h"

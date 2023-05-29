@@ -18,6 +18,9 @@ public:
     explicit game(const QString& playerOneName = QString(), const QString& playerTwoName = QString(), bool empty = false, QWidget *parent = nullptr);
     ~game();
 
+    bool updateScore;
+    bool error;
+
     void updateNames(QString playerOneName, QString playerTwoName) { this->playerOneName = playerOneName; this->playerTwoName = playerTwoName; }
     QString getPlayerOneName() { return this->playerOneName; }
     QString getPlayerTwoName() { return this->playerTwoName; }
@@ -32,7 +35,6 @@ public slots:
     void validateAndUpdate();
     void updateTime();
     void renderBoard(bool emptyBoard);
-    void updateStats();
     bool generateBoard(int index);
 
 private slots:
