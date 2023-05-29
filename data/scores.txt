@@ -1,13 +1,1 @@
 winner_name,completed_cells
-Saca,5
-asd,2
-asdasd,1
-Saca,5
-asd,2
-asdasd,1
-Saca,5
-asd,2
-asdasd,1
-Saca,5
-asd,2
-asdasd,1

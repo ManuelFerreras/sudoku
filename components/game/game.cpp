@@ -66,6 +66,8 @@ void game::validateAndUpdate()
 
                 if(ok && isValid(i, j, newValue))
                 {
+                    error = false;
+
                     // Update the value in the game state
                     gameBoard[i][j].value = newValue;
 
